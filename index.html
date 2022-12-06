@@ -15,17 +15,24 @@
 			<!--<pre>{{data}}</pre>-->
 			<h2><u>Choississez un numéro entre 1 et 100 ou aléatoirement</u></h2>
 			<input type="number" name="number_name" id="number_id" min="1" max="100" size="4" v-model="id">
-			<h3>{{data.name}}</h3>
-			<p>Nombre d'albums : {{data.nb_album}}</p>
-			<p>Nombre de fans : {{data.nb_fan}}</p>
-			<img v-bind:src="data.picture_medium" alt="artist_picture"/>
+			<h3>{{artist_data.name}}</h3>
+			<p>Nombre d'albums : {{artist_data.nb_album}}</p>
+			<p>Nombre de fans : {{artist_data.nb_fan}}</p>
+			<img v-bind:src="artist_data.picture_medium" alt="artist_picture"/>
 			<br><br>
-			<button @click="randomId">Artiste aléatoire</button>
+			<button @click="toggleBooleanAlbum()">Voir les albums</button>
+			<ul v-if="album_names_bool === true">
+				<li v-for="d in data">
+					<p>{{d.title}}</p>
+				</li>
+			</ul>
+			<br><br>
+			<button @click="randomId()">Artiste aléatoire</button>
 		</div>
 		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 		<script src="https://unpkg.com/vue@3"></script>
 		<script>
-			const apiURL =
+			let apiURL =
 				"https://api.deezer.com/artist/";
 			const config = {
 			};
@@ -34,25 +41,38 @@
 				data() {
 					return {
 						id: 1,
-						data: null,
+						artist_data: null,
 						name: null,
 						picture_medium: "unknown_artist.jpg",
 						nb_album: null,
 						nb_fan: null,
+						album_names_bool: false,
+						data: null,
 					};
 				},
 
 				created: function () {
-					this.fetchDataAsync()
+					this.fetchArtistDataAsync()
+					this.fetchAlbumDataAsync()
 				},
 
 				watch: {
-					id: "fetchDataAsync",
+					id: "fetchArtistDataAsync",
+					albums: "fetchAlbumDataAsync",
 				},
 				methods: {
-					fetchDataAsync: async function () {
+					fetchArtistDataAsync: async function () {
 						try {
-							const response = await axios.get(apiURL + this.id, config)
+							let response = await axios.get(apiURL + this.id, config)
+							console.log(response.data)
+							this.artist_data = response.data
+						} catch(error) {
+							console.log(error);
+						}
+					},
+					fetchAlbumDataAsync: async function () {
+						try {
+							let response = await axios.get(apiURL + this.id + "/albums", config)
 							console.log(response.data)
 							this.data = response.data
 						} catch(error) {
@@ -62,7 +82,11 @@
 					randomId: function () {
 						this.id = Math.floor(Math.random() * 100)
 						return this.id;
-					}
+					},
+					toggleBooleanAlbum: function () {
+                        this.album_names_bool = !this.album_names_bool;
+						console.log(this.album_names_bool);
+                    },
 				},
 			}).mount("#main");
 		</script>
