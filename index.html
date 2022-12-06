@@ -20,10 +20,10 @@
 			<p>Nombre de fans : {{artist_data.nb_fan}}</p>
 			<img v-bind:src="artist_data.picture_medium" alt="artist_picture"/>
 			<br><br>
-			<button @click="toggleBooleanAlbum()">Voir les albums</button>
+			<button @click="toggleBooleanAlbum()">Voir les 25 premiers albums (maximum)</button>
 			<ul v-if="album_names_bool === true">
-				<li v-for="d in data">
-					<p>{{d.title}}</p>
+				<li v-for="ad in album_data.data">
+					<p>{{ad.title}}</p>
 				</li>
 			</ul>
 			<br><br>
@@ -47,7 +47,7 @@
 						nb_album: null,
 						nb_fan: null,
 						album_names_bool: false,
-						data: null,
+						album_data: null,
 					};
 				},
 
@@ -74,7 +74,7 @@
 						try {
 							let response = await axios.get(apiURL + this.id + "/albums", config)
 							console.log(response.data)
-							this.data = response.data
+							this.album_data = response.data
 						} catch(error) {
 							console.log(error);
 						}
