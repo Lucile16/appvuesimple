@@ -8,20 +8,30 @@
 			#main {
 				font-family: "Helvetica", Arial, sans-serif;
 			}
+			[v-cloak] {
+				display: none;
+			}
 		</style>
 	</head>
 	<body>
 		<div id="main" v-cloak>
 			<h2><u>Choississez un numéro entre 1 et 100 ou aléatoirement</u></h2>
 			<input type="number" name="number_name" id="number_id" min="1" max="100" size="4" v-model="id">
-			<h3>{{artist_data.name}}</h3>
-			<p>Nombre d'albums : {{artist_data.nb_album}}</p>
-			<p>Nombre de fans : {{artist_data.nb_fan}}</p>
-			<img v-bind:src="artist_data.picture_medium" alt="artist_picture"/>
+			<br><br>
+			<div class="search">
+				<input type="search" v-model="searchString" @change="searchArtist()" placeholder="Entrez un nom d'artiste"/>
+				<button @click="searchArtist()">Rechercher</button>
+			</div>
+			<div v-if="artistData">
+				<h3>{{artistData.name}}</h3>
+				<p>Nombre d'albums : {{artistData.nb_album}}</p>
+				<p>Nombre de fans : {{artistData.nb_fan}}</p>
+				<img v-bind:src="artistData.picture_medium" alt="artist_picture"/>
+			</div>
 			<br><br>
 			<button @click="toggleBooleanAlbum()">Voir les 25 premiers albums (maximum)</button>
-			<ul v-if="album_names_bool">
-				<li v-for="ad in album_data.data">
+			<ul v-if="albumNamesBool">
+				<li v-for="ad in albumData.data">
 					<p>{{ad.title}}</p>
 				</li>
 			</ul>
@@ -33,6 +43,8 @@
 		<script>
 			let apiUrl =
 				"https://api.deezer.com/artist/";
+			let searchUrl =
+				"https://api.deezer.com/search/artist?q=";
 			const config = {
 			};
 
@@ -40,13 +52,14 @@
 				data() {
 					return {
 						id: 1,
-						artist_data: null,
-						name: null,
-						picture_medium: "unknown_artist.jpg",
-						nb_album: null,
-						nb_fan: null,
-						album_names_bool: false,
-						album_data: null,
+						artistData: null,
+						name: "",
+						pictureMedium: "unknown_artist.jpg",
+						nbAlbum: null,
+						nbFan: null,
+						albumNamesBool: false,
+						albumData: null,
+						searchString: "",
 					};
 				},
 
@@ -61,9 +74,18 @@
 					fetchDataAsync: async function () {
 						try {
 							let response = await axios.get(apiUrl + this.id, config)
-							this.artist_data = response.data
+							this.artistData = response.data
 							let responseAlbums = await axios.get(apiUrl + this.id + "/albums", config)
-							this.album_data = responseAlbums.data
+							this.albumData = responseAlbums.data
+						} catch(error) {
+							console.log(error);
+						}
+					},
+					searchArtist: async function () {
+						try {
+							let searchStringTrimmed = this.searchString.trim().toLowerCase()
+							let responseSearch = await axios.get(searchUrl + searchStringTrimmed, config)
+							this.artistData = responseSearch.data.data[0]
 						} catch(error) {
 							console.log(error);
 						}
@@ -73,7 +95,7 @@
 						return this.id;
 					},
 					toggleBooleanAlbum: function () {
-                        this.album_names_bool = !this.album_names_bool;
+                        this.albumNamesBool = !this.albumNamesBool;
                     },
 				},
 			}).mount("#main");
