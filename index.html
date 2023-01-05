@@ -31,7 +31,7 @@
 		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 		<script src="https://unpkg.com/vue@3"></script>
 		<script>
-			let apiURL =
+			let apiUrl =
 				"https://api.deezer.com/artist/";
 			const config = {
 			};
@@ -51,29 +51,19 @@
 				},
 
 				created: function () {
-					this.fetchArtistDataAsync()
-					this.fetchAlbumDataAsync()
+					this.fetchDataAsync()
 				},
 
 				watch: {
-					id: "fetchArtistDataAsync",
-					album_data: "fetchAlbumDataAsync",
+					id: "fetchDataAsync",
 				},
 				methods: {
-					fetchArtistDataAsync: async function () {
+					fetchDataAsync: async function () {
 						try {
-							let response = await axios.get(apiURL + this.id, config)
-							console.log(response.data)
+							let response = await axios.get(apiUrl + this.id, config)
 							this.artist_data = response.data
-						} catch(error) {
-							console.log(error);
-						}
-					},
-					fetchAlbumDataAsync: async function () {
-						try {
-							let response = await axios.get(apiURL + this.id + "/albums", config)
-							console.log(response.data)
-							this.album_data = response.data
+							let responseAlbums = await axios.get(apiUrl + this.id + "/albums", config)
+							this.album_data = responseAlbums.data
 						} catch(error) {
 							console.log(error);
 						}
@@ -84,7 +74,6 @@
 					},
 					toggleBooleanAlbum: function () {
                         this.album_names_bool = !this.album_names_bool;
-						console.log(this.album_names_bool);
                     },
 				},
 			}).mount("#main");
